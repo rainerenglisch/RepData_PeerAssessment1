@@ -22,34 +22,68 @@ mean(steps_by_day$x, na.rm =TRUE)
 median(steps_by_day$x, na.rm =TRUE)
 ```
 
-
-
 ## What is the average daily activity pattern?
 ```{r}
 steps_interval <- aggregate(steps~interval, data = activity, mean)
 library(ggplot2)
-qplot(steps_interval$interval,steps_interval$steps,  geom=c("line"))
+with(steps_interval,
+qplot(interval,steps,  geom=c("line")))
+```
+
+```{r,echo=FALSE,results="hide"}
+dev.copy(png, file ="instructions_fig/average_daily_activity_pattern.png")
+dev.off()
 ```
 
 
 ## Imputing missing values
+No NAs in interval column:
+```{r}
+count_interval_NAs <- sum(is.na(activity$interval))
+count_interval_NAs 
+```
+No NAs in data column:
+```{r}
+count_date_NAs <- sum(is.na(activity$date))
+count_date_NAs
+```
+Only NAs in step column:
 ```{r}
 count_step_NAs <- sum(is.na(activity$steps))
 count_step_NAs
-count_interval_NAs <- sum(is.na(activity$interval))
-count_interval_NAs 
-count_date_NAs <- sum(is.na(activity$date))
-count_date_NAs
+```
+Input missing data with the mean of the corresponding 5 minute interval
+```{r,warning=FALSE}
 fixed_activity <- transform(activity, meansteps = subset(steps_interval, interval==interval,steps))
 step_NAs <- is.na(activity$steps)
 fixed_activity$steps[step_NAs] <- fixed_activity$steps.1[step_NAs]
 ```
 ## Are there differences in activity patterns between weekdays and weekends?
+
+Plot for activity pattern during week.
 ```{r}
 weekd <- weekdays(fixed_activity$myDate,abbreviate=T)
 fixed_activity <- transform(fixed_activity, day = ifelse(weekd %in% c("So","Sa"),"Weekend", "Weekday"))
 steps_interval_weekday <- aggregate(steps~interval, data = subset(fixed_activity,day=="Weekday"), mean)
-qplot(steps_interval_weekday$interval,steps_interval_weekday$steps,  geom=c("line"))
+
+with(steps_interval_weekday,
+qplot(interval, steps,  geom=c("line")))
 steps_interval_weekend <- aggregate(steps~interval, data = subset(fixed_activity,day=="Weekend"), mean)
-qplot(steps_interval_weekend$interval,steps_interval_weekend$steps,  geom=c("line"))
+```
+
+```{r,echo=FALSE,results="hide"}
+dev.copy(png, file ="instructions_fig/activity_pattern_weekday.png")
+dev.off()
+```
+
+Plot for activity pattern at weekend.
+
+```{r}
+with(steps_interval_weekend,
+qplot(interval,steps,  geom=c("line")))
+```
+
+```{r,echo=FALSE,results="hide"}
+dev.copy(png, file ="instructions_fig/activity_pattern_weekend.png")
+dev.off()
 ```

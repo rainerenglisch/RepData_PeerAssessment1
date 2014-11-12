@@ -29,29 +29,22 @@ median(steps_by_day$x, na.rm =TRUE)
 ## [1] 37.37847
 ```
 
-
-
 ## What is the average daily activity pattern?
 
 ```r
 steps_interval <- aggregate(steps~interval, data = activity, mean)
 library(ggplot2)
-qplot(steps_interval$interval,steps_interval$steps,  geom=c("line"))
+with(steps_interval,
+qplot(interval,steps,  geom=c("line")))
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
 
 
+
+
 ## Imputing missing values
-
-```r
-count_step_NAs <- sum(is.na(activity$steps))
-count_step_NAs
-```
-
-```
-## [1] 2304
-```
+No NAs in interval column:
 
 ```r
 count_interval_NAs <- sum(is.na(activity$interval))
@@ -61,6 +54,7 @@ count_interval_NAs
 ```
 ## [1] 0
 ```
+No NAs in data column:
 
 ```r
 count_date_NAs <- sum(is.na(activity$date))
@@ -70,34 +64,52 @@ count_date_NAs
 ```
 ## [1] 0
 ```
+Only NAs in step column:
+
+```r
+count_step_NAs <- sum(is.na(activity$steps))
+count_step_NAs
+```
+
+```
+## [1] 2304
+```
+Input missing data with the mean of the corresponding 5 minute interval
 
 ```r
 fixed_activity <- transform(activity, meansteps = subset(steps_interval, interval==interval,steps))
-```
-
-```
-## Warning in data.frame(structure(list(steps = c(NA, NA, NA, NA, NA, NA, NA,
-## : row names were found from a short variable and have been discarded
-```
-
-```r
 step_NAs <- is.na(activity$steps)
 fixed_activity$steps[step_NAs] <- fixed_activity$steps.1[step_NAs]
 ```
 ## Are there differences in activity patterns between weekdays and weekends?
 
+Plot for activity pattern during week.
+
 ```r
 weekd <- weekdays(fixed_activity$myDate,abbreviate=T)
 fixed_activity <- transform(fixed_activity, day = ifelse(weekd %in% c("So","Sa"),"Weekend", "Weekday"))
 steps_interval_weekday <- aggregate(steps~interval, data = subset(fixed_activity,day=="Weekday"), mean)
-steps_interval_weekend <- aggregate(steps~interval, data = subset(fixed_activity,day=="Weekend"), mean)
-qplot(steps_interval_weekday$interval,steps_interval_weekday$steps,  geom=c("line"))
+
+with(steps_interval_weekday,
+qplot(interval, steps,  geom=c("line")))
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png) 
 
 ```r
-qplot(steps_interval_weekend$interval,steps_interval_weekend$steps,  geom=c("line"))
+steps_interval_weekend <- aggregate(steps~interval, data = subset(fixed_activity,day=="Weekend"), mean)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-5-2.png) 
+
+
+Plot for activity pattern at weekend.
+
+
+```r
+with(steps_interval_weekend,
+qplot(interval,steps,  geom=c("line")))
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png) 
+
+
